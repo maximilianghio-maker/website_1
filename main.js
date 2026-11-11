@@ -12,16 +12,35 @@
       bar.scrollTo({ left: chip.offsetLeft - bar.clientWidth / 2 + chip.offsetWidth / 2, behavior: 'smooth' });
     }
   };
-  if ('IntersectionObserver' in window) {
-    const seen = new Set();
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => (e.isIntersecting ? seen.add(e.target) : seen.delete(e.target)));
-      // With two columns several sections are visible at once; pick the one nearest the top.
-      const top = [...seen].sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
-      if (top) setActive(top.id);
-    }, { rootMargin: '-25% 0px -55% 0px' });
-    cats.forEach((c) => io.observe(c));
-  }
+  // The menu runs in two columns on wide screens, so several sections share the same
+  // height on screen. A clicked section therefore stays highlighted until the visitor
+  // scrolls by hand; after that the highlight follows the section under the bar.
+  let locked = false, ticking = false;
+  const bar = document.getElementById('chips-bar');
+  const follow = () => {
+    ticking = false;
+    if (locked || !bar) return;
+    const line = bar.getBoundingClientRect().bottom + 40;
+    // With two columns, follow the left one so the highlight moves in menu order.
+    let best = null, bestTop = -Infinity, bestLeft = Infinity;
+    for (const c of cats) {
+      if (c.hidden) continue;
+      const r = c.getBoundingClientRect();
+      if (r.top > line || r.bottom <= line) continue;
+      if (r.left < bestLeft - 1 || (Math.abs(r.left - bestLeft) <= 1 && r.top > bestTop)) { best = c; bestTop = r.top; bestLeft = r.left; }
+    }
+    if (!best) best = cats.find((c) => !c.hidden && c.getBoundingClientRect().top > line) || null;
+    const menu = document.getElementById('menu').getBoundingClientRect();
+    setActive(best && menu.top < window.innerHeight && menu.bottom > 0 ? best.id : null);
+  };
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(follow); } };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  ['wheel', 'touchmove', 'keydown'].forEach((ev) => window.addEventListener(ev, (e) => {
+    if (ev === 'keydown' && !['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) return;
+    locked = false;
+  }, { passive: true }));
+  chips.forEach((chip) => chip.addEventListener('click', () => { locked = true; setActive(chip.dataset.cat); }));
+  follow();
 
   /* Search the menu */
   const input = document.getElementById('menu-search');
