@@ -193,8 +193,11 @@ h2 { font-size: clamp(2.1rem, 4.4vw, 3.6rem); line-height: 1.05; }
 
 /* Responsive */
 @media (max-width: 1020px) {
-  .nav nav { display: none; }
-  .nav-cta { margin-left: auto; }
+  .nav-cta, .nav nav a.nav-wide { display: none; }
+  .nav-inner { gap: 12px; }
+  .nav nav a { padding: 0 12px; }
+  .nav nav a.nav-key { background: var(--gold); color: var(--ink); font-weight: 700; }
+  .nav nav a.nav-key:hover { background: var(--gold-soft); color: var(--ink); }
   .reviews { columns: 2; }
   .sets { grid-template-columns: 1fr; max-width: 640px; }
 }
@@ -215,8 +218,11 @@ h2 { font-size: clamp(2.1rem, 4.4vw, 3.6rem); line-height: 1.05; }
 @media (max-width: 560px) {
   body { font-size: 16px; }
   :root { --nav-h: 60px; }
-  .wordmark { height: 20px; }
-  .nav-cta { padding: 0 16px; }
+  .wordmark { height: 18px; max-width: 100%; }
+  .brand { min-width: 0; flex: 0 1 auto; }
+  .nav nav a.nav-mid { display: none; }
+  .nav nav { flex: none; gap: 2px; }
+  .nav nav a { font-size: 14px; white-space: nowrap; }
   .reviews { columns: 1; }
   .actions, .actions .btn { width: 100%; }
   .details > div { grid-template-columns: 1fr; }
